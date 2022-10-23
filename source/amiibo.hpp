@@ -27,7 +27,7 @@ public:
         amiiboJsonDatabase = json::parse(ifs);
     }
 
-    bool generateAmiibo(int number, int maxAmiibos)
+    bool generateAmiibo(int number, int maxAmiibos, bool withImage)
     {
 
         json amiibo = amiiboJsonDatabase["amiibo"][number];
@@ -123,22 +123,30 @@ public:
         output2 << amiiboData.dump(2);
         output2.close();
 
-        std::string text = "[" + std::to_string(number) + "/" + std::to_string(maxAmiibos) + "] generated: " + amiiboSeries + " - " + amiiboName + "\n";
+
+        if (withImage){
+            int ret = Util::download_file(amiibo["image"].get<std::string>(), amiiboPathFull + "amiibo.png");
+            if (ret != 0)
+            {
+                printf("Failed to download image. Error code: %d\n", ret);
+            }
+        }
+
+        std::string text = "[" + std::to_string(number + 1) + "/" + std::to_string(maxAmiibos) + "] generated: " + amiiboSeries + " - " + amiiboName + "\n";
         printf(text.c_str());
         consoleUpdate(NULL);
         return true;
     }
 
-    bool generateAllAmibos()
+    bool generateAllAmibos(bool withImage = false)
     {
         for (long unsigned int i = 0; i < amiiboJsonDatabase["amiibo"].size(); i++)
         {
-            generateAmiibo(i, amiiboJsonDatabase["amiibo"].size() - 1);
+            generateAmiibo(i, amiiboJsonDatabase["amiibo"].size(), withImage);
         }
 
-        printf("\nAmiibos generated, you can exit now. (+)\n");
+        printf("\nAmiibos generated.\n\n");
         consoleUpdate(NULL);
-
         return true;
     }
 

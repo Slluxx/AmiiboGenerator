@@ -6,6 +6,31 @@
 #include "amiibo.hpp"
 #include "util.hpp"
 
+void print_menu()
+{
+    printf("Press + to exit.\n");
+    // printf("Press - to delete all currently generated amiibo.\n");
+    printf("Press Y to download/update amiibo database (needs internet).\n");
+    printf("Press X to generate all amiibos.\n");
+    printf("Press A to generate all amiibos with images (very slow, needs internet).\n\n");
+    consoleUpdate(NULL);
+}
+
+void clickedGenerateAmiibo(bool dbExists, bool withImage = false)
+{
+    if (!dbExists)
+    {
+        printf("Amiibo database not found. Please download it first (Y).\n\n");
+    }
+    else
+    {
+        printf("Generating all amiibos...\n");
+        Amiibo amiibo = Amiibo();
+        amiibo.generateAllAmibos(withImage);
+        print_menu();
+    }
+}
+
 int main(int argc, char *argv[])
 {
     consoleInit(NULL);
@@ -19,14 +44,14 @@ int main(int argc, char *argv[])
     bool amiiboFileExists = Util::check_file_exist("sdmc:/emuiibo/amiibos.json");
     if (!amiiboFileExists)
     {
-        printf("Amiibo database not found. Press Y to download it.\n\n");
+        printf("Amiibo database not found.\n\n");
     }
     else
     {
-        printf("Amiibo database found.\nPress Y to update, X to generate all amiibos or + to exit.\n\n");
+        printf("Amiibo database found.\n\n");
     }
 
-    consoleUpdate(NULL);
+    print_menu();
 
     while (appletMainLoop())
     {
@@ -35,6 +60,19 @@ int main(int argc, char *argv[])
 
         if (kDown & HidNpadButton_Plus)
             break;
+
+        /*
+        // I dont know why but this doesnt work for some reason. Crashes the application.
+        if (kDown & HidNpadButton_Minus)
+        {
+            printf("Deleting all generated amiibos....\n");
+            if (Util::check_folder_exist("sdmc:/emuiibo/amiibo/"))
+            {
+                Util::delete_folder_with_content("sdmc:/emuiibo/amiibo");
+            }
+            printf("All generated amiibo deleted.\n\n");
+        }
+        */
 
         if (kDown & HidNpadButton_Y)
         {
@@ -47,9 +85,8 @@ int main(int argc, char *argv[])
             int ret = Util::download_file("https://www.amiiboapi.com/api/amiibo/", "sdmc:/emuiibo/amiibos.json");
             if (ret == 0)
             {
-                printf("Database downloaded.\n");
-                printf("You can now press X to generate all amiibos, Y to update again or + to exit.\n\n");
                 amiiboFileExists = true;
+                printf("Database downloaded. You can now generate amiibos.\n\n");
             }
             else
             {
@@ -60,17 +97,12 @@ int main(int argc, char *argv[])
 
         if (kDown & HidNpadButton_X)
         {
-            if (!amiiboFileExists)
-            {
-                printf("Amiibo database not found. Please download it first.\n\n");
-            }
-            else
-            {
+            clickedGenerateAmiibo(amiiboFileExists, false);
+        }
 
-                printf("Generating all amiibos...\n");
-                Amiibo amiibo = Amiibo();
-                amiibo.generateAllAmibos();
-            }
+        if (kDown & HidNpadButton_A)
+        {
+            clickedGenerateAmiibo(amiiboFileExists, true);
         }
         consoleUpdate(NULL);
     }
