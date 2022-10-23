@@ -1,4 +1,4 @@
-# AmiiboGenerator
+# AmiiboGenerator for Nintendo Switch
 Generates all Amiibos directly on your console.
 
 It needs internet to download the amiibo database from [here](https://www.amiiboapi.com/api/amiibo/). Though you can download it manually and place it in `sdmc:/emuiibo/amiibos.json`.
