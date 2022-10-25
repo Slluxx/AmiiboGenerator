@@ -35,16 +35,15 @@ void clickedGenerateAmiibo(bool dbExists, bool withImage = false)
 
 void deleteAmiibos()
 {
+    consoleClear();
     if (Util::check_folder_exist("sdmc:/emuiibo/amiibo/"))
     {
         printf("Deleting all amiibos. This can take a few seconds.\n\n");
         consoleUpdate(NULL);
         Util::delete_folder_with_content("sdmc:/emuiibo/amiibo");
-
-        // clear the screen
-        consoleClear();
-        printf("All amiibo deleted.\n\n");
     }
+    consoleClear();
+    printf("All amiibo deleted.\n\n");
 }
 
 void downloadDatabase(bool amiiboFileExists)
