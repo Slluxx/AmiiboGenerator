@@ -109,11 +109,6 @@ public:
         // some amiibos have the same name, adding the number infront of the name ensures no overwrites.
         std::string amiiboPathFull = "sdmc:/emuiibo/amiibo/" + amiiboSeries + "/" + amiiboName + "_" + amiiboId + "/";
 
-        if (Util::check_folder_exist(amiiboPathFull.c_str()))
-        {
-            Util::delete_folder_with_content(amiiboPathFull.c_str());
-        }
-
         Util::create_directory(amiiboPathFull.c_str());
 
         std::ofstream output(amiiboPathFull + "amiibo.flag");
