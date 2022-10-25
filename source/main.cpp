@@ -13,7 +13,7 @@ void print_menu()
     printf("Press Y to download/update amiibo database (needs internet).\n");
     printf("Press X to generate all amiibos *.\n");
     printf("Press A to generate all amiibos with images * (very slow, needs internet).\n\n");
-    printf("* Generating amiibos will first delete all existing ones for compability.\n\n");
+    printf("* Generating amiibos will first delete __all__ existing ones for compability.\n\n");
     consoleUpdate(NULL);
 }
 
