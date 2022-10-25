@@ -9,10 +9,13 @@
 #include <filesystem>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include "stb_image_resize.h"
+
+#include <switch.h>
 
 class Util
 {
@@ -34,8 +37,41 @@ public:
 
     static bool delete_folder_with_content(const std::string &path)
     {
-        return std::filesystem::remove_all(path);
+        DIR *dir;
+        struct dirent *ent;
+        if ((dir = opendir(path.c_str())) != NULL)
+        {
+            while ((ent = readdir(dir)) != NULL)
+            {
+                std::string file_name = ent->d_name;
+                std::string full_file_name = path + "/" + file_name;
+
+                if (file_name.at(0) == '.')
+                    continue;
+
+                if (ent->d_type == DT_DIR)
+                {
+                    delete_folder_with_content(full_file_name);
+                    printf(".");
+                    consoleUpdate(NULL);
+                }
+                else
+                {
+
+                    remove(full_file_name.c_str());
+                }
+            }
+            closedir(dir);
+        }
+        else
+        {
+            return false;
+        }
+
+        remove(path.c_str());
+        return true;
     }
+
 
     static int RandU(int nMin, int nMax)
     {
@@ -94,11 +130,13 @@ public:
         return -1;
     }
 
-    static int loadAndResizeImageInRatio(std::string imagePath){
+    static int loadAndResizeImageInRatio(std::string imagePath)
+    {
         // load png image
         int width, height, channels;
         unsigned char *data = stbi_load(imagePath.c_str(), &width, &height, &channels, 0);
-        if (data == NULL) {
+        if (data == NULL)
+        {
             printf("Error: failed to load image %s", imagePath.c_str());
             return 0;
         }
@@ -109,9 +147,11 @@ public:
         stbir_resize_uint8(data, width, height, 0, resizedData, newWidth, 150, 0, channels);
 
         // convert to RGBA if needed
-        if (channels == 3) {
+        if (channels == 3)
+        {
             unsigned char *rgbaData = (unsigned char *)malloc(newWidth * 150 * 4);
-            for (int i = 0; i < newWidth * 150; i++) {
+            for (int i = 0; i < newWidth * 150; i++)
+            {
                 rgbaData[i * 4 + 0] = resizedData[i * 3 + 0];
                 rgbaData[i * 4 + 1] = resizedData[i * 3 + 1];
                 rgbaData[i * 4 + 2] = resizedData[i * 3 + 2];
