@@ -1,10 +1,18 @@
 #ifndef INCLUDE_UTIL_HPP_
 #define INCLUDE_UTIL_HPP_
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+
 #include <curl/curl.h>
 #include <filesystem>
 #include <stdlib.h>
 #include <string.h>
+
+#include "stb_image.h"
+#include "stb_image_write.h"
+#include "stb_image_resize.h"
 
 class Util
 {
@@ -84,6 +92,44 @@ public:
             return res;
         }
         return -1;
+    }
+
+    static int loadAndResizeImageInRatio(std::string imagePath){
+        // load png image
+        int width, height, channels;
+        unsigned char *data = stbi_load(imagePath.c_str(), &width, &height, &channels, 0);
+        if (data == NULL) {
+            printf("Error: failed to load image %s", imagePath.c_str());
+            return 0;
+        }
+
+        // resize image to a height of 150px and keep the aspect ratio
+        int newWidth = 150 * width / height;
+        unsigned char *resizedData = (unsigned char *)malloc(newWidth * 150 * channels);
+        stbir_resize_uint8(data, width, height, 0, resizedData, newWidth, 150, 0, channels);
+
+        // convert to RGBA if needed
+        if (channels == 3) {
+            unsigned char *rgbaData = (unsigned char *)malloc(newWidth * 150 * 4);
+            for (int i = 0; i < newWidth * 150; i++) {
+                rgbaData[i * 4 + 0] = resizedData[i * 3 + 0];
+                rgbaData[i * 4 + 1] = resizedData[i * 3 + 1];
+                rgbaData[i * 4 + 2] = resizedData[i * 3 + 2];
+                rgbaData[i * 4 + 3] = 255;
+            }
+            free(resizedData);
+            resizedData = rgbaData;
+            channels = 4;
+        }
+
+        // save resized image
+        stbi_write_png(imagePath.c_str(), newWidth, 150, channels, resizedData, newWidth * channels);
+
+        // free memory
+        free(data);
+        free(resizedData);
+
+        return 1;
     }
 };
 

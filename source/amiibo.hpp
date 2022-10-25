@@ -129,6 +129,8 @@ public:
             if (ret != 0)
             {
                 printf("Failed to download image. Error code: %d\n", ret);
+            } else {
+                Util::loadAndResizeImageInRatio(amiiboPathFull + "amiibo.png");
             }
         }
 
