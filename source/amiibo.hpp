@@ -107,7 +107,7 @@ public:
                       { return (ch >= 0xd800) && (ch <= 0xdfff); });
 
         // some amiibos have the same name, adding the number infront of the name ensures no overwrites.
-        std::string amiiboPathFull = "sdmc:/emuiibo/amiibo/" + amiiboSeries + "/" + std::to_string(number) + "_" + amiiboName + "/";
+        std::string amiiboPathFull = "sdmc:/emuiibo/amiibo/" + amiiboSeries + "/" + amiiboName + "_" + amiiboId + "/";
 
         if (Util::check_folder_exist(amiiboPathFull.c_str()))
         {
