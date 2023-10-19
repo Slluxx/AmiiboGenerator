@@ -160,7 +160,7 @@ public:
             "B           : toggle info screen\n"
             "X           : generate selected amiibo\n"
             "Y           : cycle amiibo info\n"
-            "LS          : delete current amiiboSeries\n\n"
+            "LS          : delete current selected amiibo\n\n"
             
             "Press B to go back.\n", generateWithImage ? "Enabled" : "Disabled", info[currentInfoIndex]
         );
