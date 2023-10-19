@@ -1,37 +1,31 @@
-#ifndef INCLUDE_AMIIBO_HPP_
-#define INCLUDE_AMIIBO_HPP_
+#pragma once
 
-#include <stdint.h>
-#include <time.h>
-#include <string>
 #include <fstream>
 #include <iostream>
-#include <stdio.h>
-#include <sys/stat.h>
+#include <vector>
+#include <dirent.h>
+#include <stdlib.h>
+#include <algorithm>
+#include <filesystem>
 
-#include <switch.h>
+#include "UTIL.hpp"
 #include "json.hpp"
-#include "util.hpp"
 
 using json = nlohmann::json;
 
 class Amiibo
 {
 public:
-    json amiiboJsonDatabase;
+    json amiibo;
 
-    Amiibo()
+    Amiibo(json data)
     {
-        srand(time(NULL)); // Initialization, should only be called once.
-        std::ifstream ifs("sdmc:/emuiibo/amiibos.json");
-        amiiboJsonDatabase = json::parse(ifs);
-    }
+        srand(time(NULL));
+        amiibo = data;
+    };
 
-    bool generateAmiibo(int number, int maxAmiibos, bool withImage)
+    bool generate(bool withImage = false)
     {
-
-        json amiibo = amiiboJsonDatabase["amiibo"][number];
-
         time_t unixTime = time(NULL);
         struct tm *timeStruct = gmtime((const time_t *)&unixTime);
         int day = timeStruct->tm_mday;
@@ -39,7 +33,6 @@ public:
         int year = timeStruct->tm_year + 1900;
 
         std::string amiiboId = amiibo["head"].get<std::string>().append(amiibo["tail"].get<std::string>());
-        // if length of amiiboId is less than 16, return false
         if (amiiboId.length() < 16)
         {
             printf("Amiibo ID is invalid\n");
@@ -53,7 +46,7 @@ public:
         std::string series_str = amiiboId.substr(12, 2);
 
         int character_game_id_be = (int)strtol(character_game_id_str.c_str(), nullptr, 16);
-        int character_game_id_int_swap = Util::swap_uint16(character_game_id_be);
+        int character_game_id_int_swap = UTIL::swap_uint16(character_game_id_be);
         int character_variant_be = (int)strtol(character_variant_str.c_str(), nullptr, 16);
         int figure_type_be = (int)strtol(character_figure_type_str.c_str(), nullptr, 16);
         int modelNumber_be = (int)strtol(model_no_str.c_str(), nullptr, 16);
@@ -84,13 +77,13 @@ public:
         amiiboData["id"]["model_number"] = modelNumber_be;
 
         amiiboData["uuid"] = json::array();
-        amiiboData["uuid"][0] = Util::RandU(0, 255);
-        amiiboData["uuid"][1] = Util::RandU(0, 255);
-        amiiboData["uuid"][2] = Util::RandU(0, 255);
-        amiiboData["uuid"][3] = Util::RandU(0, 255);
-        amiiboData["uuid"][4] = Util::RandU(0, 255);
-        amiiboData["uuid"][5] = Util::RandU(0, 255);
-        amiiboData["uuid"][6] = Util::RandU(0, 255);
+        amiiboData["uuid"][0] = UTIL::RandU(0, 255);
+        amiiboData["uuid"][1] = UTIL::RandU(0, 255);
+        amiiboData["uuid"][2] = UTIL::RandU(0, 255);
+        amiiboData["uuid"][3] = UTIL::RandU(0, 255);
+        amiiboData["uuid"][4] = UTIL::RandU(0, 255);
+        amiiboData["uuid"][5] = UTIL::RandU(0, 255);
+        amiiboData["uuid"][6] = UTIL::RandU(0, 255);
         amiiboData["uuid"][7] = 0;
         amiiboData["uuid"][8] = 0;
         amiiboData["uuid"][9] = 0;
@@ -98,69 +91,79 @@ public:
         std::string amiiboSeries = amiibo["amiiboSeries"].get<std::string>();
         std::string amiiboName = amiibo["name"].get<std::string>();
 
-        amiiboSeries.erase(std::remove_if(amiiboSeries.begin(), amiiboSeries.end(), &Util::isBlacklistedCharacter), amiiboSeries.end());
-        amiiboName.erase(std::remove_if(amiiboName.begin(), amiiboName.end(), &Util::isBlacklistedCharacter), amiiboName.end());
+        amiiboSeries.erase(std::remove_if(amiiboSeries.begin(), amiiboSeries.end(), &UTIL::isBlacklistedCharacter), amiiboSeries.end());
+        amiiboName.erase(std::remove_if(amiiboName.begin(), amiiboName.end(), &UTIL::isBlacklistedCharacter), amiiboName.end());
 
+        /* i have no idea what i did here. i think the top code is the same as below?
         std::erase_if(amiiboSeries, [](char16_t ch)
                       { return (ch >= 0xd800) && (ch <= 0xdfff); });
         std::erase_if(amiiboName, [](char16_t ch)
                       { return (ch >= 0xd800) && (ch <= 0xdfff); });
+        */
 
         // replace all spaces with underscores
         std::replace(amiiboSeries.begin(), amiiboSeries.end(), '/', '_');
         std::replace(amiiboName.begin(), amiiboName.end(), '/', '_');
 
-        // some amiibos have the same name, adding the number infront of the name ensures no overwrites.
+        // some amiibos have the same name, adding the number suffix of the name ensures no overwrites.
+        std::string amiiboPathFull = "sdmc:/emuiibo/amiibo/" + amiiboSeries + "/" + amiiboName + "_" + amiiboId + "/"; // "sdmc:/emuiibo/amiibo/" +
+
+        // no need to create the amiibo if it already exists - delete it if you want to regenerate it.
+        if (std::filesystem::exists(amiiboPathFull))
+        {
+            printf("Amiibo already exists.\n");
+            return false;
+        }
+
+        // if it doesnt, create it.
+        std::filesystem::create_directories(amiiboPathFull);
+        if (std::filesystem::exists(amiiboPathFull))
+        {
+            std::ofstream output(amiiboPathFull + "amiibo.flag");
+            output.close();
+
+            std::ofstream output2(amiiboPathFull + "amiibo.json");
+            output2 << amiiboData.dump(2);
+            output2.close();
+
+            if (withImage)
+            {
+                int ret = UTIL::downloadFile(amiibo["image"].get<std::string>(), amiiboPathFull + "amiibo.png");
+                if (ret != 0)
+                {
+                    printf("Failed to download image. Error code: %d\n", ret);
+                }
+                else
+                {
+                    UTIL::loadAndResizeImageInRatio(amiiboPathFull + "amiibo.png");
+                }
+            }
+
+        }
+        return true;
+    };
+
+    bool erase(){
+        std::string amiiboId = amiibo["head"].get<std::string>().append(amiibo["tail"].get<std::string>());
+        if (amiiboId.length() < 16)
+        {
+            printf("Amiibo ID is invalid\n");
+            return false;
+        }
+
+        std::string amiiboSeries = amiibo["amiiboSeries"].get<std::string>();
+        std::string amiiboName = amiibo["name"].get<std::string>();
+
+        amiiboSeries.erase(std::remove_if(amiiboSeries.begin(), amiiboSeries.end(), &UTIL::isBlacklistedCharacter), amiiboSeries.end());
+        amiiboName.erase(std::remove_if(amiiboName.begin(), amiiboName.end(), &UTIL::isBlacklistedCharacter), amiiboName.end());
+
+        std::replace(amiiboSeries.begin(), amiiboSeries.end(), '/', '_');
+        std::replace(amiiboName.begin(), amiiboName.end(), '/', '_');
+
         std::string amiiboPathFull = "sdmc:/emuiibo/amiibo/" + amiiboSeries + "/" + amiiboName + "_" + amiiboId + "/";
 
-        // if amiibo folder already exists, return false and don't overwrite
-        if (Util::check_folder_exist(amiiboPathFull))
-            return false;
+        std::uintmax_t n = std::filesystem::remove_all(amiiboPathFull);
 
-        Util::create_directory(amiiboPathFull.c_str());
-
-        std::ofstream output(amiiboPathFull + "amiibo.flag");
-        output.close();
-
-        std::ofstream output2(amiiboPathFull + "amiibo.json");
-        output2 << amiiboData.dump(2);
-        output2.close();
-
-        std::ofstream output3(amiiboPathFull + "autogenerated.flag");
-        output3.close();
-
-        if (withImage)
-        {
-            int ret = Util::download_file(amiibo["image"].get<std::string>(), amiiboPathFull + "amiibo.png");
-            if (ret != 0)
-            {
-                printf("Failed to download image. Error code: %d\n", ret);
-            }
-            else
-            {
-                Util::loadAndResizeImageInRatio(amiiboPathFull + "amiibo.png");
-            }
-        }
-
-        std::string text = "[" + std::to_string(number + 1) + "/" + std::to_string(maxAmiibos) + "] generated: " + amiiboSeries + " - " + amiiboName + "\n";
-        printf(text.c_str());
-        consoleUpdate(NULL);
-        return true;
+        return false;
     }
-
-    bool generateAllAmibos(bool withImage = false)
-    {
-        for (long unsigned int i = 0; i < amiiboJsonDatabase["amiibo"].size(); i++)
-        {
-            generateAmiibo(i, amiiboJsonDatabase["amiibo"].size(), withImage);
-        }
-
-        printf("\nAmiibos generated.\n\n");
-        consoleUpdate(NULL);
-        return true;
-    }
-
-private:
 };
-
-#endif // INCLUDE_AMIIBO_HPP_
