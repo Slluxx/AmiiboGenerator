@@ -161,8 +161,9 @@ public:
         std::replace(amiiboName.begin(), amiiboName.end(), '/', '_');
 
         std::string amiiboPathFull = "sdmc:/emuiibo/amiibo/" + amiiboSeries + "/" + amiiboName + "_" + amiiboId + "/";
-
-        std::uintmax_t n = std::filesystem::remove_all(amiiboPathFull);
+        
+        // std::uintmax_t n = 
+        std::filesystem::remove_all(amiiboPathFull);
 
         return false;
     }

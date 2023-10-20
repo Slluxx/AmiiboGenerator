@@ -265,7 +265,6 @@ public:
     }
 
     void inputHandler(){
-        int _null = 0;
         padUpdate(&pad);
         u64 kDown = padGetButtonsDown(&pad);
 
@@ -298,7 +297,7 @@ public:
                 generateAmiibo();
             if (kDown & HidNpadButton_Y) // works
                 nextInfoIndex();
-            if (kDown & HidNpadButton_StickL) // delete selected amiibo
+            if (kDown & HidNpadButton_StickL) // works
                 deleteSelectedAmiibo();
             
         } else if (currentScreen == AvailableScreens::HELP) {
