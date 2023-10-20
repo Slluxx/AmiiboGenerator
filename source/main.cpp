@@ -14,7 +14,13 @@ int main()
 {
 
     consoleInit(NULL);
+    // setsysInitialize();
+    appletInitialize();
     socketInitializeDefault();
+
+    // appletLockExit(); // disables home button, doesnt work?
+    // appletSetFocusHandlingMode(AppletFocusHandlingMode_NoSuspend); // disables suspension, doesnt work?
+    appletSetAutoSleepDisabled(true); // disables sleep
 
     if (UTIL::checkAmiiboDatabase() == true) { 
         
@@ -26,7 +32,13 @@ int main()
         
     }
 
+    appletSetAutoSleepDisabled(false);
+    // appletSetFocusHandlingMode(AppletFocusHandlingMode_SuspendHomeSleep);
+    // appletUnlockExit();
+
     socketExit();
+    appletExit();
+    // setsysExit();
     consoleExit(NULL);
     return 0;
 }
