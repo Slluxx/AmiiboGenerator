@@ -45,4 +45,7 @@ It only generates json files that emuiibo can use. They are exactly the same one
 
 Downloading amiibos with images will take a while. The tool automatically resizes them for space & speed and converts RGB to RGBA if nessesary.
 
-<img src="https://gbatemp.net/attachments/2022102317472000-3f45637d5c7801e066e1565e15d313f7-jpg.333499/">
+
+
+https://github.com/Slluxx/AmiiboGenerator/assets/15162905/da3eee1b-9b78-4164-830b-c394957d57f5
+
