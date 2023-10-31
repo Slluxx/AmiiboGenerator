@@ -45,7 +45,7 @@ INCLUDES	:=	include
 #ROMFS	:=	romfs
 APP_TITLE 	:= AmiiboGenerator
 APP_AUTHOR 	:= Slluxx
-APP_VERSION := 2.1.0
+APP_VERSION := 2.1.1
 
 #---------------------------------------------------------------------------------
 # options for code generation

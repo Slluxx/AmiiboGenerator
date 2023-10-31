@@ -63,6 +63,10 @@ namespace UTIL
 
     static bool checkAmiiboDatabase()
     {
+        if (!std::filesystem::exists("sdmc:/emuiibo/")){
+            std::filesystem::create_directories("sdmc:/emuiibo/");
+        }
+
         if (!std::filesystem::exists("sdmc:/emuiibo/amiibos.json"))
         {
             printf("Amiibo database not present. Updating ...\n");
