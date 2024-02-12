@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "UTIL.hpp"
+#include "util.hpp"
 #include "json.hpp"
 
 using json = nlohmann::json;
