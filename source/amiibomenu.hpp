@@ -160,7 +160,8 @@ public:
             "B           : toggle info screen\n"
             "X           : generate selected amiibo\n"
             "Y           : cycle amiibo info\n"
-            "LS          : delete current selected amiibo\n\n"
+            "LS          : delete current selected amiibo\n"
+            "RS          : sort database\n\n"
             
             "Press B to go back.\n", generateWithImage ? "Enabled" : "Disabled", info[currentInfoIndex]
         );
@@ -299,6 +300,8 @@ public:
                 nextInfoIndex();
             if (kDown & HidNpadButton_StickL) // works
                 deleteSelectedAmiibo();
+            if (kDown & HidNpadButton_StickR)
+                sortAmiibo();
             
         } else if (currentScreen == AvailableScreens::HELP) {
             if (kDown & HidNpadButton_ZR) // works
@@ -366,6 +369,17 @@ public:
         }
 
         updateScreen(AvailableScreens::MAIN);
+    }
+
+    void sortAmiibo() {
+        const std::string sortingArgument = info[currentInfoIndex];
+        using amiiboType = decltype(*amiibodata["amiibo"].begin());
+
+        std::sort(amiibodata["amiibo"].begin(), amiibodata["amiibo"].end(), [&sortingArgument] (const amiiboType item1, const amiiboType item2) {
+            return item1[sortingArgument] < item2[sortingArgument];
+        });
+
+        updateScreen();
     }
 
     int mainLoop(){
