@@ -161,7 +161,7 @@ public:
             "X           : generate selected amiibo\n"
             "Y           : cycle amiibo info\n"
             "LS          : delete current selected amiibo\n"
-            "Rstick      : sort database\n\n"
+            "RS          : sort database\n\n"
             
             "Press B to go back.\n", generateWithImage ? "Enabled" : "Disabled", info[currentInfoIndex]
         );

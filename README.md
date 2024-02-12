@@ -34,6 +34,7 @@ You can also view this in-app by pressing "B"
 | X          | generate selected amiibo       |
 | Y          | cycle amiibo info              |
 | LeftStick  | delete current selected amiibo |
+| RightStick | alphabetical sort of database  |
 
 
 ### Note:
